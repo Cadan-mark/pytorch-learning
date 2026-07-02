@@ -11,8 +11,13 @@ from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 
 
-# 设备
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# 设备(优先 XPU / Intel GPU,其次 CUDA,都没有用 CPU)
+if hasattr(torch, "xpu") and torch.xpu.is_available():
+    device = torch.device("xpu")
+elif torch.cuda.is_available():
+    device = torch.device("cuda")
+else:
+    device = torch.device("cpu")
 print(f"device: {device}")
 
 
