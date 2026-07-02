@@ -13,7 +13,13 @@ from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# 设备(优先 XPU / Intel GPU,其次 CUDA,都没有用 CPU)
+if hasattr(torch, "xpu") and torch.xpu.is_available():
+    device = torch.device("xpu")
+elif torch.cuda.is_available():
+    device = torch.device("cuda")
+else:
+    device = torch.device("cpu")
 print(f"device: {device}")
 
 
@@ -33,8 +39,9 @@ test_transform = transforms.Compose([
 train_dataset = datasets.CIFAR10(root="./data", train=True,  download=True, transform=train_transform)
 test_dataset  = datasets.CIFAR10(root="./data", train=False, download=True, transform=test_transform)
 
-train_loader = DataLoader(train_dataset, batch_size=128, shuffle=True,  num_workers=2)
-test_loader  = DataLoader(test_dataset,  batch_size=256, shuffle=False, num_workers=2)
+# num_workers=0:主进程加载数据,在仿真/XPU 环境下更稳
+train_loader = DataLoader(train_dataset, batch_size=128, shuffle=True,  num_workers=0)
+test_loader  = DataLoader(test_dataset,  batch_size=256, shuffle=False, num_workers=0)
 
 classes = ("plane", "car", "bird", "cat", "deer",
            "dog", "frog", "horse", "ship", "truck")
