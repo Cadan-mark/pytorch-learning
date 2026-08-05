@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PyTorch 学习 Demo</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --border: #30363d;
+      --accent: #ee4c2c;
+      --text: #c9d1d9;
+      --text-muted: #8b949e;
+      --link: #58a6ff;
+      --code-bg: #1f2428;
+      --tag-green: #1b4332;
+      --tag-green-text: #3fb950;
+      --tag-yellow: #3d2f00;
+      --tag-yellow-text: #d29922;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      line-height: 1.7;
+      padding: 2rem 1rem 4rem;
+    }
+
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    /* ── Header ── */
+    header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 2rem;
+    }
+
+    .logo {
+      width: 48px;
+      height: 48px;
+      background: var(--accent);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      flex-shrink: 0;
+    }
+
+    header h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    /* ── Section titles ── */
+    h2 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #fff;
+      margin: 2.5rem 0 1rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ── Env block ── */
+    .env-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.2rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .env-block p { margin-bottom: 0.6rem; }
+
+    /* ── Code ── */
+    pre, code {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 0.875rem;
+    }
+
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.9rem 1.1rem;
+      overflow-x: auto;
+      color: #e6edf3;
+    }
+
+    code {
+      background: var(--code-bg);
+      padding: 0.15em 0.4em;
+      border-radius: 4px;
+      color: #e6edf3;
+    }
+
+    pre code { background: transparent; padding: 0; }
+
+    /* ── Step cards ── */
+    .steps { display: flex; flex-direction: column; gap: 1.2rem; }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.2rem 1.4rem;
+      transition: border-color 0.2s;
+    }
+
+    .card:hover { border-color: var(--accent); }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .step-num {
+      background: var(--accent);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.8rem;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .card h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .card h3 span {
+      color: var(--text-muted);
+      font-weight: 400;
+      font-size: 0.9rem;
+    }
+
+    .card p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.7rem; }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .tag {
+      font-size: 0.75rem;
+      padding: 0.2em 0.6em;
+      border-radius: 99px;
+      background: var(--code-bg);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+
+    /* ── Table ── */
+    .file-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    .file-table th {
+      text-align: left;
+      padding: 0.55rem 0.8rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .file-table td {
+      padding: 0.6rem 0.8rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .file-table tr:last-child td { border-bottom: none; }
+
+    .badge {
+      display: inline-block;
+      padding: 0.15em 0.6em;
+      border-radius: 99px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .badge-green { background: var(--tag-green); color: var(--tag-green-text); }
+    .badge-yellow { background: var(--tag-yellow); color: var(--tag-yellow-text); }
+
+    /* ── Link ── */
+    a { color: var(--link); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    blockquote {
+      border-left: 3px solid var(--accent);
+      padding-left: 1rem;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin: 0.8rem 0;
+    }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <header>
+    <div class="logo">🔥</div>
+    <div>
+      <h1>pytorch-learning</h1>
+      <p>PyTorch 学习 demo，从 autograd 原理一步步到 CNN 实战。</p>
+    </div>
+  </header>
+
+  <!-- 环境 -->
+  <h2>⚙️ 环境</h2>
+  <div class="env-block">
+    <p>安装依赖：</p>
+    <pre><code>pip install -r requirements.txt</code></pre>
+    <blockquote>
+      torch / torchvision 建议按你的系统和 CUDA 版本，到
+      <a href="https://pytorch.org/get-started/locally/" target="_blank">PyTorch 官网</a>
+      获取对应安装命令；只用 CPU 直接 <code>pip install</code> 即可。
+    </blockquote>
+  </div>
+
+  <!-- 学习顺序 -->
+  <h2>📚 建议学习顺序</h2>
+  <p style="color:var(--text-muted);font-size:.9rem;margin-bottom:1rem;">
+    按 <code>01 → 02 → 03 → 04</code> 循序渐进，每一个都在前一个基础上增加新东西。
+  </p>
+
+  <div class="steps">
+
+    <!-- 01 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="step-num">01</div>
+        <h3>01_autograd_demo.py <span>— autograd 自动求导</span></h3>
+      </div>
+      <p>理解 PyTorch 的核心机制：你只写前向，反向的梯度它自动算。</p>
+      <div class="tags">
+        <span class="tag">计算图</span>
+        <span class="tag">backward()</span>
+        <span class="tag">梯度累加 / zero_grad()</span>
+        <span class="tag">no_grad()</span>
+      </div>
+      <pre><code>python 01_autograd_demo.py   # 几秒出结果，不用下载数据</code></pre>
+    </div>
+
+    <!-- 02 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="step-num">02</div>
+        <h3>02_mnist_train.py <span>— 全连接网络，吃透训练循环</span></h3>
+      </div>
+      <p>用最简单的全连接网络做 MNIST 手写数字识别，重点是训练流程。</p>
+      <div class="tags">
+        <span class="tag">nn.Module</span>
+        <span class="tag">Dataset / DataLoader</span>
+        <span class="tag">训练循环四步</span>
+        <span class="tag">model.train() / eval()</span>
+      </div>
+      <pre><code>python 02_mnist_train.py   # 首次运行自动下载 MNIST（约 10MB）</code></pre>
+    </div>
+
+    <!-- 03 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="step-num">03</div>
+        <h3>03_mnist_cnn.py <span>— CNN 卷积网络</span></h3>
+      </div>
+      <p>把全连接换成 CNN，更适合图像任务，准确率可到 ~99%。</p>
+      <div class="tags">
+        <span class="tag">Conv2d</span>
+        <span class="tag">MaxPool2d</span>
+        <span class="tag">Dropout</span>
+      </div>
+      <pre><code>python 03_mnist_cnn.py</code></pre>
+    </div>
+
+    <!-- 04 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="step-num">04</div>
+        <h3>04_cifar10_cnn.py <span>— 更难数据集 + 工程技巧</span></h3>
+      </div>
+      <p>CIFAR-10 彩色图片（3 通道），比 MNIST 难，并加入常用工程手段。</p>
+      <div class="tags">
+        <span class="tag">数据增强</span>
+        <span class="tag">BatchNorm</span>
+        <span class="tag">lr_scheduler</span>
+        <span class="tag">保存最佳模型</span>
+      </div>
+      <pre><code>python 04_cifar10_cnn.py   # 首次运行下载 CIFAR-10（约 170MB），建议有 GPU</code></pre>
+    </div>
+
+  </div>
+
+  <!-- 文件一览 -->
+  <h2>📁 文件一览</h2>
+  <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+    <table class="file-table">
+      <thead>
+        <tr>
+          <th>文件</th>
+          <th>内容</th>
+          <th>难度</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>01_autograd_demo.py</code></td>
+          <td>autograd 自动求导演示</td>
+          <td><span class="badge badge-green">入门</span></td>
+        </tr>
+        <tr>
+          <td><code>02_mnist_train.py</code></td>
+          <td>MNIST 全连接网络</td>
+          <td><span class="badge badge-green">入门</span></td>
+        </tr>
+        <tr>
+          <td><code>03_mnist_cnn.py</code></td>
+          <td>MNIST CNN，~99%</td>
+          <td><span class="badge badge-yellow">进阶</span></td>
+        </tr>
+        <tr>
+          <td><code>04_cifar10_cnn.py</code></td>
+          <td>CIFAR-10 CNN（数据增强 / BatchNorm / 调度器）</td>
+          <td><span class="badge badge-yellow">进阶</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <footer>
+    <p>
+      <a href="https://github.com/Cadan-mark/pytorch-learning" target="_blank">GitHub 仓库</a>
+      &nbsp;·&nbsp;
+      基于 <a href="https://pytorch.org/" target="_blank">PyTorch</a> 构建
+    </p>
+  </footer>
+
+</div>
+</body>
+</html>
